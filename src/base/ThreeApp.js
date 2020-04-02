@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import SkyDome from './SkyDome';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-const CAMERA_FOV = 75;
+const CAMERA_FOV = 60;
 const CAMERA_ASPECT = 2;
 const CAMERA_NEAR = 0.1;
 const CAMERA_FAR = 1000;
