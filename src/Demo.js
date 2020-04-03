@@ -2,12 +2,9 @@ import * as THREE from 'three';
 import ThreeApp from "./base/ThreeApp";
 import fragmentSource from "./shaders/fragment-particles.glsl";
 import vertexSource from "./shaders/vertex-particles.glsl";
-import particleT1Url from '../images/particle-circle-t1.png';
-import particleT2Url from '../images/particle-circle-t2.png';
-import particleT3Url from '../images/particle-circle-t3.png';
 
-const PARTICLE_COUNT = 2000;
-const PARTICLE_SPREAD = 10;
+const PARTICLE_COUNT = 10000;
+const PARTICLE_SPREAD = 50;
 export default class Demo {
   constructor() {
     this.app = new ThreeApp({
@@ -21,6 +18,20 @@ export default class Demo {
   }
 
   setup() {
+    this.createParticles();
+    this.createLight();
+  }
+
+  createLight() {
+    const { scene } = this.app;
+    const geo = new THREE.SphereBufferGeometry(0.35, 15, 15);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const mesh = new THREE.Mesh(geo, mat);
+    this.light = mesh;
+    scene.add(mesh);
+  }
+
+  createParticles() {
     const { scene } = this.app;
 
     // Geometry
@@ -43,21 +54,22 @@ export default class Demo {
 
     // Material
     const uniforms = {
-      uParticleT1: { value: new THREE.TextureLoader().load(particleT1Url) },
-      uParticleT2: { value: new THREE.TextureLoader().load(particleT2Url) },
-      uParticleT3: { value: new THREE.TextureLoader().load(particleT3Url) },
       uTime: { value: 0 },
       uSpread: { value: PARTICLE_SPREAD },
-      uScale: { value: 8 },
-      uFadeOut: { value: 2 },
+      uScale: { value: 4 },
+      uSpeed: { value: 0.2 },
+      uFadeOut: { value: 3 },
+      uLightPosition: { value: new THREE.Vector3() },
       uResolution: { value: new THREE.Vector2() },
     };
+
     const mat = new THREE.ShaderMaterial({
       fragmentShader: fragmentSource,
       vertexShader: vertexSource,
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
       transparent: true,
+      // blending: THREE.AdditiveBlending,
       uniforms,
     });
 
@@ -69,12 +81,15 @@ export default class Demo {
 
   updateParticles(delta) {
     const { uniforms: u, app } = this;
-    u.uTime.value += delta * 0.5;
+    u.uTime.value += delta;
     u.uResolution.value.set(app.width, app.height);
+    u.uLightPosition.value.copy(this.light.position);
   }
 
-  onRender({ delta, scene, camera, renderer }) {
+  onRender({ elapsedTime, delta, scene, camera, renderer }) {
+    const { light } = this;
     this.updateParticles(delta);
+    //light.position.copy(camera.position).multiplyScalar(0.5);
     renderer.render(scene, camera);
   }
 }
